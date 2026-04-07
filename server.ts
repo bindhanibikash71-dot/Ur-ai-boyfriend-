@@ -15,6 +15,35 @@ async function startServer() {
 
   app.use(express.json());
 
+  // API Route for Gemini (Secure Backend)
+  app.post("/api/chat", async (req, res) => {
+    const { messages, systemInstruction } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({ error: "GEMINI_API_KEY is not set" });
+    }
+
+    try {
+      const { GoogleGenAI } = await import("@google/genai");
+      const ai = new GoogleGenAI({ apiKey });
+      
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: messages,
+        config: {
+          systemInstruction,
+          temperature: 0.8,
+        }
+      });
+
+      res.json({ text: response.text || "" });
+    } catch (error: any) {
+      console.error("Gemini Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // API Route for Health Check
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });

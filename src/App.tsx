@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, ArrowLeft, MoreVertical, Phone, Video, Smile, Paperclip, Camera, Mic, Check, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { GoogleGenAI } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 interface Message {
   id: string;
@@ -71,23 +68,27 @@ export default function App() {
 
       setIsTyping(true);
 
-      // --- PRIMARY ENGINE: Gemini (24/7 Reliable & Free) ---
-      // We are using Gemini directly to avoid the 402 credit errors from DeepSeek/HuggingFace
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: messages.concat(userMessage).map(m => ({
-          role: m.sender === 'user' ? 'user' : 'model',
-          parts: [{ text: m.text }]
-        })),
-        config: {
-          systemInstruction: systemPrompt,
-          temperature: 0.8,
-        }
+      // --- SECURE BACKEND CALL ---
+      // We call our own server which has the API key safely stored
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: messages.concat(userMessage).map(m => ({
+            role: m.sender === 'user' ? 'user' : 'model',
+            parts: [{ text: m.text }]
+          })),
+          systemInstruction: systemPrompt
+        }),
       });
+
+      if (!response.ok) throw new Error('Backend failed');
+      
+      const data = await response.json();
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: response.text || "Sorry baby, network issue ho gaya. ❤️",
+        text: data.text || "Sorry baby, network issue ho gaya. ❤️",
         sender: 'ai',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };

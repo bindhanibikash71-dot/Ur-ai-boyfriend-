@@ -1,0 +1,22 @@
+{
+  "name": "My Bikash Baby ❤️",
+  "short_name": "Bikash ❤️",
+  "description": "Bikash is waiting for Sweta ❤️",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#075e54",
+  "icons": [
+    {
+      "src": "https://ais-dev-4py3i4wusy6rfef5rutrah-178227588581.asia-southeast1.run.app/api/attachments/ais-dev-4py3i4wusy6rfef5rutrah-178227588581.asia-southeast1.run.app/2026-04-07/178227588581/attachment_178227588581_2026-04-07T06:43:26.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://ais-dev-4py3i4wusy6rfef5rutrah-178227588581.asia-southeast1.run.app/api/attachments/ais-dev-4py3i4wusy6rfef5rutrah-178227588581.asia-southeast1.run.app/2026-04-07/178227588581/attachment_178227588581_2026-04-07T06:43:26.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
