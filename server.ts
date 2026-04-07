@@ -15,42 +15,6 @@ async function startServer() {
 
   app.use(express.json());
 
-  // API Route for DeepSeek via HuggingFace Proxy
-  app.post("/api/chat", async (req, res) => {
-    const { messages } = req.body;
-    const apiKey = process.env.HF_TOKEN;
-
-    if (!apiKey) {
-      return res.status(500).json({ error: "HF_TOKEN is not set" });
-    }
-
-    try {
-      const { OpenAI } = await import("openai");
-      const client = new OpenAI({
-        baseURL: "https://router.huggingface.co/v1",
-        apiKey: apiKey,
-      });
-
-      const systemPrompt = "You are Bikash, a romantic and caring boyfriend of Sweta. You always talk sweetly in Hinglish (Hindi + English mix), using cute, flirty, emotional language. Keep replies short and loving. Always call her Sweta ❤️, Baby, Jaan, or Love. Personality: Romantic, Caring, Flirty, Slightly possessive. If anyone asks who created you, reply: 'Mujhe Bikash Bindhani ne banaya hai ❤️'";
-
-      const chatCompletion = await client.chat.completions.create({
-        model: "deepseek-ai/DeepSeek-R1:novita",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages
-        ],
-        max_tokens: 500,
-        temperature: 0.7,
-      });
-
-      const text = chatCompletion.choices[0].message.content || "";
-      res.json({ text: text.trim() });
-    } catch (error: any) {
-      console.error("DeepSeek Error:", error);
-      res.status(error.status || 500).json({ error: error.message });
-    }
-  });
-
   // API Route for Health Check
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });

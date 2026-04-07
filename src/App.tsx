@@ -69,57 +69,25 @@ export default function App() {
     try {
       const systemPrompt = "You are Bikash, a romantic and caring boyfriend of Sweta. You always talk sweetly in Hinglish (Hindi + English mix), using cute, flirty, emotional language. Keep replies short and loving. Always call her Sweta ❤️, Baby, Jaan, or Love. Personality: Romantic, Caring, Flirty, Slightly possessive. If anyone asks who created you, reply: 'Mujhe Bikash Bindhani ne banaya hai ❤️'";
 
-      let aiResponseText = "";
-      let retryCount = 0;
-      const maxRetries = 1;
+      setIsTyping(true);
 
-      const getAIResponse = async () => {
-        // --- SMART ROUTER: Try DeepSeek First ---
-        try {
-          const response = await fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              messages: messages.concat(userMessage).map(m => ({
-                role: m.sender === 'user' ? 'user' : 'assistant',
-                content: m.text
-              }))
-            }),
-          });
-
-          if (!response.ok) throw new Error('DeepSeek failed');
-          
-          const data = await response.json();
-          if (data.text) {
-            console.log("DeepSeek is active... ❤️");
-            return data.text;
-          } else {
-            throw new Error('No text from DeepSeek');
-          }
-        } catch (deepSeekError) {
-          console.warn("DeepSeek down. Using Gemini Fallback... 🧠⚡");
-          
-          // --- FALLBACK: Use Gemini (24/7 Reliable) ---
-          const response = await ai.models.generateContent({
-            model: "gemini-3-flash-preview",
-            contents: messages.concat(userMessage).map(m => ({
-              role: m.sender === 'user' ? 'user' : 'model',
-              parts: [{ text: m.text }]
-            })),
-            config: {
-              systemInstruction: systemPrompt,
-              temperature: 0.8,
-            }
-          });
-          return response.text || "";
+      // --- PRIMARY ENGINE: Gemini (24/7 Reliable & Free) ---
+      // We are using Gemini directly to avoid the 402 credit errors from DeepSeek/HuggingFace
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: messages.concat(userMessage).map(m => ({
+          role: m.sender === 'user' ? 'user' : 'model',
+          parts: [{ text: m.text }]
+        })),
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: 0.8,
         }
-      };
-
-      aiResponseText = await getAIResponse();
+      });
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: aiResponseText || "Sorry baby, network issue ho gaya. ❤️",
+        text: response.text || "Sorry baby, network issue ho gaya. ❤️",
         sender: 'ai',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
